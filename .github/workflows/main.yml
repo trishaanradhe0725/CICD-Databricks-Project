@@ -14,7 +14,7 @@ jobs:
     env:
       DATABRICKS_HOST: ${{ secrets.DEV_DATABRICKS_URL }}
       DATABRICKS_TOKEN: ${{ secrets.DEV_DATABRICKS_TOKEN }}
-      REPO_PATH: /Repos/trishaanradhe0725@gmail.com/DEV-CICD-Databricks-Project   # Must be exact Repos path
+      REPO_PATH: /Workspace/Users/trishaanradhe0725@gmail.com/DEV-CICD-Databricks-Project  # Must be exact Repos path
 
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
     env:
       DATABRICKS_HOST: ${{ secrets.PROD_DATABRICKS_URL }}
       DATABRICKS_TOKEN: ${{ secrets.PROD_DATABRICKS_TOKEN }}
-      REPO_PATH: /Repos/trishaanradhe0725@gmail.com/PROD-CICD-Databricks-Project   # Must be exact Repos path
+      REPO_PATH: /Workspace/Users/trishaanradhe0725@gmail.com/PROD-CICD-Databricks-Project   # Must be exact Repos path
 
     steps:
       - uses: actions/checkout@v4
