@@ -5,7 +5,7 @@ on:
     paths-ignore:
       - .github
     branches:
-      - main  # Add 'dev' here if you have a separate dev branch
+      - main   # Add 'dev' or others if needed
 
 jobs:
   deploy-dev:
@@ -14,7 +14,7 @@ jobs:
     env:
       DATABRICKS_HOST: ${{ secrets.DEV_DATABRICKS_URL }}
       DATABRICKS_TOKEN: ${{ secrets.DEV_DATABRICKS_TOKEN }}
-      REPO_PATH: /Workspace/Users/trishaanradhe0725@gmail.com/DEV-CICD-Databricks-Project
+      REPO_PATH: /Repos/trishaanradhe0725@gmail.com/DEV-CICD-Databricks-Project   # Update if different
 
     steps:
       - uses: actions/checkout@v4
@@ -26,13 +26,22 @@ jobs:
 
       - uses: databricks/setup-cli@main
 
+      - name: Install jq (for JSON parsing)
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Extract branch name
         id: extract_branch
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
 
-      - name: Update Databricks Dev Repo
+      - name: Get Databricks Repo ID from Path
+        id: get_repo_id
         run: |
-          databricks repos update --path "${{ env.REPO_PATH }}" --branch "${{ steps.extract_branch.outputs.branch }}"
+          REPO_ID=$(databricks workspace get-status "${{ env.REPO_PATH }}" | jq -r '.object_id')
+          echo "repo_id=$REPO_ID" >> $GITHUB_OUTPUT
+
+      - name: Update Databricks Dev Repo (checkout/pull to branch)
+        run: |
+          databricks repos update ${{ steps.get_repo_id.outputs.repo_id }} --branch "${{ steps.extract_branch.outputs.branch }}"
 
   deploy-prod:
     needs: deploy-dev
@@ -41,7 +50,7 @@ jobs:
     env:
       DATABRICKS_HOST: ${{ secrets.PROD_DATABRICKS_URL }}
       DATABRICKS_TOKEN: ${{ secrets.PROD_DATABRICKS_TOKEN }}
-      REPO_PATH: /Workspace/Users/trishaanradhe0725@gmail.com/PROD-CICD-Databricks-Project
+      REPO_PATH: /Repos/trishaanradhe0725@gmail.com/PROD-CICD-Databricks-Project   # Update if different
 
     steps:
       - uses: actions/checkout@v4
@@ -53,10 +62,19 @@ jobs:
 
       - uses: databricks/setup-cli@main
 
+      - name: Install jq (for JSON parsing)
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Extract branch name
         id: extract_branch
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
 
-      - name: Update Databricks Prod Repo
+      - name: Get Databricks Repo ID from Path
+        id: get_repo_id
         run: |
-          databricks repos update --path "${{ env.REPO_PATH }}" --branch "${{ steps.extract_branch.outputs.branch }}"
+          REPO_ID=$(databricks workspace get-status "${{ env.REPO_PATH }}" | jq -r '.object_id')
+          echo "repo_id=$REPO_ID" >> $GITHUB_OUTPUT
+
+      - name: Update Databricks Prod Repo (checkout/pull to branch)
+        run: |
+          databricks repos update ${{ steps.get_repo_id.outputs.repo_id }} --branch "${{ steps.extract_branch.outputs.branch }}"
