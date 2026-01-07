@@ -20,14 +20,14 @@ jobs:
       - name: Validate bundle (recommended)
         run: databricks bundle validate -t prod
         env:
-          DATABRICKS_HOST: ${{ secrets.DATABRICKS_PROD_HOST }}
-          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_PROD_TOKEN }}
+          DATABRICKS_HOST: ${{ secrets.PROD_DATABRICKS_URL }}
+          DATABRICKS_TOKEN: ${{ secrets.PROD_DATABRICKS_TOKEN }}
 
       - name: Deploy to production
         run: databricks bundle deploy -t prod
         env:
-          DATABRICKS_HOST: ${{ secrets.DATABRICKS_PROD_HOST }}
-          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_PROD_TOKEN }}
+          DATABRICKS_HOST: ${{ secrets.PROD_DATABRICKS_URL }}
+          DATABRICKS_TOKEN: ${{ secrets.PROD_DATABRICKS_TOKEN }}
 
       # Optional: Remove REPO_PATH if not needed
       # Most users don't need to set REPO_PATH manually
