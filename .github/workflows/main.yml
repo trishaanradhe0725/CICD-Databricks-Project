@@ -4,23 +4,34 @@ on:
   push:
     branches: [ main ]
 
-concurrency: production  # Good – prevents overlapping runs
+concurrency: production
 
 jobs:
   deploy-prod:
     runs-on: ubuntu-latest
-    environment: production  # Good for approvals/secrets scoping
+    environment: production
+    defaults:
+      run:
+        working-directory: .  # Explicitly set to repo root (usually default, but safe)
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history (helps with git operations in bundles)
+
+      - name: Debug - List files (to confirm databricks.yml exists)
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -la
 
       - name: Setup Databricks CLI
         uses: databricks/setup-cli@main
 
-      - name: Validate bundle (recommended)
+      - name: Validate bundle
         run: databricks bundle validate -t prod
         env:
-          DATABRICKS_HOST: ${{ secrets.PROD_DATABRICKS_URL }}
+          DATABRICKS_HOST: ${{ secrets.PROD_DATABRICKS_URL }}  # Fixed secret name
           DATABRICKS_TOKEN: ${{ secrets.PROD_DATABRICKS_TOKEN }}
 
       - name: Deploy to production
@@ -28,6 +39,3 @@ jobs:
         env:
           DATABRICKS_HOST: ${{ secrets.PROD_DATABRICKS_URL }}
           DATABRICKS_TOKEN: ${{ secrets.PROD_DATABRICKS_TOKEN }}
-
-      # Optional: Remove REPO_PATH if not needed
-      # Most users don't need to set REPO_PATH manually
