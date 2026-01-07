@@ -1,0 +1,49 @@
+name: Development Deployment
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Validate and deploy to dev
+        run: |
+          databricks bundle validate -t dev
+          databricks bundle deploy -t dev
+        env:
+          DATABRICKS_HOST: ${{ secrets.DEV_DATABRICKS_TOKEN }}
+          DATABRICKS_TOKEN: ${{ secrets.DEV_DATABRICKS_URL }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production  # Optional: Use GitHub Environments for approvals/secrets
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full git history (required for bundle git operations)
+
+      - name: Setup Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Validate bundle
+        run: databricks bundle validate -t prod
+        env:
+          DATABRICKS_HOST: ${{ secrets.PROD_DATABRICKS_URL }}
+          DATABRICKS_TOKEN: ${{ secrets.PROD_DATABRICKS_TOKEN }}
+
+      - name: Deploy to production
+        run: databricks bundle deploy -t prod
+        env:
+          DATABRICKS_HOST: ${{ secrets.PROD_DATABRICKS_URL }}
+          DATABRICKS_TOKEN: ${{ secrets.PROD_DATABRICKS_TOKEN }}          
